@@ -83,22 +83,6 @@ def _jq_code_format(code):
         return ".".join([id, con_exchange])
 
 
-# def generate_inserts(df: pd.DataFrame):
-#     # 将 money 列重命名为 amount
-#     df = df.rename(columns={'money': 'amount'})
-#     # 将索引转换为其中的一列
-#     df['time'] = pd.to_datetime(df.index)
-#     # 将聚宽的时间整体减1min
-#     df['time'] = df['time'].map(lambda dt: dt - pd.Timedelta(minutes=1))
-#     # 转换时间格式
-#     df.time = df.time.astype(str)
-#     inserts = list(json.loads(df.to_json(orient="index", date_format="iso")).values())
-#     for insert in inserts:
-#         insert.update({"time": datetime.datetime.strptime(insert['time'], "%Y-%m-%d %H:%M:%S")})
-#     # 生成待插入的列表
-#     return inserts
-
-
 def generate_inserts(df: pd.DataFrame):
     # 将 money 列重命名为 amount
     df = df.rename(columns={'money': 'amount'})
@@ -124,7 +108,14 @@ def main(start: datetime.datetime, end: datetime.datetime):
     # 登录
     login(USER_NAME, PASSWORD)
     # 待插入的数据库
-    conn = get_local_coll().test_futures.prices
+    # 为数据库设置唯一索引
+    # use futu
+    # db.prices.ensureIndex({"code": 1, "time": 1}, {unique: true})
+
+    # 导出数据库文件
+    # mongodump -h dbhost -d dbname -o dbdirectory
+    # mongodump -h 127.0.0.1 --port 27018 -d futu -c prices -o /Users/furuiyang/Desktop/mongo/
+    conn = get_local_coll().futu.prices
 
     for dt in pd.date_range(start, end, freq="1d"):
         dt = dt.to_pydatetime()
